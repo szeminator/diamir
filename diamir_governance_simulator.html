@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diamir Governance Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #131318;
+  --surface: #131318;
+  --surface-low: #1B1B20;
+  --surface-mid: #1F1F24;
+  --surface-high: #2A292F;
+  --surface-highest: #35343A;
+  --primary: #F1DAFF;
+  --primary-container: #DDB8F9;
+  --primary-dim: #9D7BB0;
+  --secondary: #B0C6FF;
+  --on-surface: #E4E1E9;
+  --on-surface-dim: #908E96;
+  --on-primary-container: #1B1B20;
+  --green: #6EE7A0;
+  --green-dim: #1a3a28;
+  --amber: #FBBF24;
+  --amber-dim: #3a2e1a;
+  --red: #F87171;
+  --red-dim: #3a1a1a;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--on-surface);
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(19,19,24,.6);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  padding: 20px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.header-left { display: flex; align-items: center; gap: 20px; }
+.header img { height: 28px; filter: brightness(0) invert(1); opacity: .9; }
+.header-divider { width: 1px; height: 24px; background: var(--surface-highest); }
+.header-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px; font-weight: 600; letter-spacing: .5px;
+  color: var(--primary-container);
+}
+
+/* CONTAINER */
+.container { max-width: 800px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* HERO */
+.hero { margin-bottom: 48px; }
+.hero-eyebrow {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--primary-container); margin-bottom: 12px;
+}
+.hero-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.5rem; font-weight: 700; color: var(--primary);
+  line-height: 1.15; margin-bottom: 16px;
+}
+.hero-desc {
+  font-size: 15px; font-weight: 400; color: var(--on-surface-dim);
+  line-height: 1.7; max-width: 560px;
+}
+
+/* BENTO CARD */
+.bento {
+  background: var(--surface-low);
+  border-radius: var(--radius-xl);
+  padding: 36px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.bento::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 0 0 1px rgba(228,225,233,.06);
+  pointer-events: none;
+}
+
+/* BUDGET SECTION */
+.budget-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 28px;
+}
+.budget-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--on-surface-dim);
+}
+.budget-amount {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 3rem; font-weight: 700; color: var(--primary);
+  transition: color .3s;
+}
+
+/* SLIDER */
+.slider-wrap { position: relative; margin-bottom: 12px; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; border-radius: 3px;
+  background: var(--surface-highest); outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary-container); cursor: pointer;
+  box-shadow: 0 0 20px rgba(221,184,249,.35), 0 4px 12px rgba(0,0,0,.4);
+  transition: box-shadow .2s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 30px rgba(221,184,249,.5), 0 4px 12px rgba(0,0,0,.4);
+}
+
+.threshold-labels {
+  display: flex; justify-content: space-between;
+  margin-bottom: 32px;
+}
+.threshold-lbl {
+  font-size: 11px; font-weight: 500; color: var(--surface-highest);
+  transition: all .4s;
+}
+.threshold-lbl.active { font-weight: 600; }
+
+/* RESULT PILL */
+.result-pill {
+  display: flex; align-items: center; gap: 20px;
+  padding: 20px 24px; border-radius: var(--radius-xl);
+  transition: all .4s;
+}
+.result-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px; font-weight: 700; flex-shrink: 0;
+  transition: all .4s;
+}
+.result-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; font-weight: 600; margin-bottom: 4px;
+}
+.result-desc { font-size: 13px; font-weight: 400; color: var(--on-surface-dim); line-height: 1.5; }
+
+/* VOTING */
+.section-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--on-surface-dim); margin-bottom: 24px;
+}
+
+.vote-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-radius: 16px;
+  background: var(--surface-mid);
+  margin-bottom: 8px;
+  transition: background .2s;
+}
+.vote-row:hover { background: var(--surface-high); }
+.vote-info { display: flex; align-items: center; gap: 10px; }
+.vote-name { font-weight: 600; font-size: 14px; }
+.vote-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--primary-container); background: rgba(221,184,249,.1);
+  padding: 3px 8px; border-radius: var(--radius-full);
+}
+.vote-btns { display: flex; gap: 6px; }
+.vote-btn {
+  padding: 8px 18px; font-size: 12px; font-weight: 600;
+  font-family: 'Manrope', sans-serif; border: none; cursor: pointer;
+  border-radius: var(--radius-full); transition: all .2s;
+  background: var(--surface-highest); color: var(--on-surface-dim);
+}
+.vote-btn:hover { background: var(--surface-highest); color: var(--on-surface); }
+.vote-btn.sel-yes { background: var(--green); color: #0a1a10; }
+.vote-btn.sel-no { background: var(--red); color: #1a0a0a; }
+.vote-btn.sel-veto { background: var(--amber); color: #1a1508; }
+
+/* VOTE RESULT */
+.vote-outcome {
+  margin-top: 20px; padding: 24px; border-radius: var(--radius-xl);
+  text-align: center; transition: all .4s;
+}
+.vote-outcome-icon { font-size: 32px; margin-bottom: 10px; }
+.vote-outcome-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px; font-weight: 700; margin-bottom: 6px;
+}
+.vote-outcome-desc { font-size: 13px; font-weight: 400; color: var(--on-surface-dim); }
+.vote-pending {
+  margin-top: 20px; text-align: center;
+  font-size: 13px; font-weight: 400; color: var(--on-surface-dim);
+}
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 40px 0 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px; font-weight: 600; color: var(--primary-dim);
+  letter-spacing: .3px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <img src="https://diamir.io/wp-content/uploads/Horizontal-Logomark-Logotype-Inverted-on-transparent.png" alt="DIAMIR">
+    <div class="header-divider"></div>
+    <div class="header-label">Governance</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="hero-eyebrow">Entscheidungsmodell</div>
+    <div class="hero-title">Budget-Simulator</div>
+    <div class="hero-desc">Schieb den Regler und sieh, wie sich die Entscheidungsebene verändert. Ab 2.500 € kannst du die Abstimmung im Kollegium simulieren.</div>
+  </div>
+
+  <!-- BUDGET SLIDER -->
+  <div class="bento">
+    <div class="budget-header">
+      <div class="budget-label">Budgethöhe</div>
+      <div class="budget-amount" id="amt">5.000 €</div>
+    </div>
+    <div class="slider-wrap">
+      <input type="range" min="500" max="50000" step="500" value="5000" id="slider" oninput="update()">
+    </div>
+    <div class="threshold-labels">
+      <div class="threshold-lbl" id="l1">Bis 2.500 €</div>
+      <div class="threshold-lbl" id="l2">2.500 – 15.000 €</div>
+      <div class="threshold-lbl" id="l3">Über 15.000 €</div>
+    </div>
+    <div class="result-pill" id="result"></div>
+  </div>
+
+  <!-- VOTING -->
+  <div class="bento" id="vote-box" style="display:none">
+    <div class="section-label">Abstimmung simulieren</div>
+    <div id="rows"></div>
+    <div id="outcome"></div>
+  </div>
+
+  <div class="footer">Wir sind eine Delivery Company. Alles andere unterstützt Delivery, oder wird nicht gemacht.</div>
+</div>
+
+<script>
+const P=[
+  {n:'Martin',gf:false},{n:'Lorenz',gf:true},{n:'Mario',gf:false},
+  {n:'Hannes',gf:false},{n:'Maxi',gf:true}
+];
+let V={};
+
+function update(){
+  const v=+document.getElementById('slider').value;
+  document.getElementById('amt').textContent=v>=100000?(v/1000)+'k €':v.toLocaleString('de-AT')+' €';
+
+  let lv,c,bg,ic,t,d;
+  if(v<=2500){lv='a';c='var(--green)';bg='var(--green-dim)';ic='✓';t='Autonome Entscheidung';d='Der Bereichsverantwortliche entscheidet eigenständig. Muss Delivery-bezogen sein.';}
+  else if(v<=15000){lv='k';c='var(--amber)';bg='var(--amber-dim)';ic='5';t='Kollegium (5 Stimmen)';d='Alle 5 Kollegiumsmitglieder stimmen ab. Einfache Mehrheit (3/5). One-Pager erforderlich.';}
+  else{lv='b';c='var(--red)';bg='var(--red-dim)';ic='GV';t='Board-Entscheidung';d='Gesellschafterentscheidung. One-Pager + detaillierter Business Case erforderlich.';}
+
+  ['l1','l2','l3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    const act=(i===0&&lv==='a')||(i===1&&lv==='k')||(i===2&&lv==='b');
+    el.style.color=act?c:'var(--surface-highest)';
+    el.className='threshold-lbl'+(act?' active':'');
+  });
+
+  document.getElementById('amt').style.color=c;
+
+  document.getElementById('result').style.background=bg;
+  document.getElementById('result').innerHTML=`
+    <div class="result-icon" style="background:${c};color:var(--on-primary-container)">${ic}</div>
+    <div><div class="result-title" style="color:${c}">${t}</div><div class="result-desc">${d}</div></div>
+  `;
+
+  const vb=document.getElementById('vote-box');
+  if(lv==='k'){vb.style.display='block';V={};renderV();}
+  else{vb.style.display='none';}
+}
+
+function renderV(){
+  let h='';
+  P.forEach(p=>{
+    const btns=['yes','no'].concat(p.gf?['veto']:[]).map(b=>{
+      const cls=V[p.n]===b?'sel-'+b:'';
+      const lb=b==='yes'?'Ja':b==='no'?'Nein':'Veto';
+      return `<button class="vote-btn ${cls}" onclick="cast('${p.n}','${b}')">${lb}</button>`;
+    }).join('');
+    h+=`<div class="vote-row"><div class="vote-info"><span class="vote-name">${p.n}</span>${p.gf?'<span class="vote-badge">GF</span>':''}</div><div class="vote-btns">${btns}</div></div>`;
+  });
+  document.getElementById('rows').innerHTML=h;
+
+  const c=Object.keys(V).length;
+  const y=Object.values(V).filter(x=>x==='yes').length;
+  const bv=V['Maxi']==='veto'&&V['Lorenz']==='veto';
+  let r='';
+
+  if(c===5){
+    if(bv) r=`<div class="vote-outcome" style="background:var(--amber-dim)"><div class="vote-outcome-icon">🚫</div><div class="vote-outcome-title" style="color:var(--amber)">Gesellschafter-Veto</div><div class="vote-outcome-desc">Maxi und Lorenz haben gemeinsam ein Veto eingelegt. Die Entscheidung ist blockiert.</div></div>`;
+    else if(y>=3) r=`<div class="vote-outcome" style="background:var(--green-dim)"><div class="vote-outcome-icon">✅</div><div class="vote-outcome-title" style="color:var(--green)">Genehmigt (${y}/5)</div><div class="vote-outcome-desc">Einfache Mehrheit erreicht. Das Projekt kann starten.</div></div>`;
+    else r=`<div class="vote-outcome" style="background:var(--red-dim)"><div class="vote-outcome-icon">❌</div><div class="vote-outcome-title" style="color:var(--red)">Abgelehnt (${y}/5)</div><div class="vote-outcome-desc">Keine Mehrheit. Der Antrag wird nicht genehmigt.</div></div>`;
+  } else if(c>0){
+    r=`<div class="vote-pending">Noch ${5-c} Stimme(n) ausstehend</div>`;
+  }
+  document.getElementById('outcome').innerHTML=r;
+}
+
+function cast(n,b){V[n]=b;renderV();}
+update();
+</script>
+</body>
+</html>
